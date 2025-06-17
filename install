@@ -17,6 +17,6 @@ NEW_RELIC_AGENT_VERSION=$(curl -s https://download.newrelic.com/php_agent/releas
 curl -o newrelic-php-agent.tar.gz https://download.newrelic.com/php_agent/release/newrelic-php5-${NEW_RELIC_AGENT_VERSION}-linux.tar.gz
 tar -xzf newrelic-php-agent.tar.gz -C /tmp/
 NR_INSTALL_USE_CP_NOT_LN=1 /tmp/newrelic-php5-$NEW_RELIC_AGENT_VERSION-linux/newrelic-install install
-sed -i 's/newrelic.appname = "PHP Application"/newrelic.appname = "$APP_NAME"/' /etc/php/8.3/cli/conf.d/newrelic.ini
-sed -i 's/newrelic.appname = "PHP Application"/newrelic.appname = "$APP_NAME"/' /etc/php/8.3/fpm/conf.d/newrelic.ini
+sed -i "s/newrelic.appname = \"PHP Application\"/newrelic.appname = \"$APP_NAME\"/" /etc/php/8.3/cli/conf.d/newrelic.ini
+sed -i "s/newrelic.appname = \"PHP Application\"/newrelic.appname = \"$APP_NAME\"/" /etc/php/8.3/fpm/conf.d/newrelic.ini
 systemctl restart php$PHP_VERSION-fpm
