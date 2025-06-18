@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NO_COLOR='\033[0m'
+
+if [ "$(id -u)" -ne 0 ]; then
+  printf "${RED}Error: This script must be run as root${NO_COLOR}\n" >&2
+  exit 1
+fi
+
+if [ ! -d "/etc/php/" ]; then
+  echo "Error: /etc/php/ directory does not exist."
+  exit 1
+fi
+
+if [ -f "/usr/bin/newrelic-daemon" ]; then
+  if pgrep -x "newrelic-daemon" > /dev/null; then
+    killall newrelic-daemon || true # Ignore failure if no process is running
+  fi
+  rm -f /usr/bin/newrelic-daemon
+  rm -f /etc/init.d/newrelic-daemon
+fi
+
+for phpVersion in /etc/php/*/ ; do
+  phpVersion=$(basename "$phpVersion")
+  newrelicFpmFile="/etc/php/$phpVersion/fpm/conf.d/newrelic.ini"
+  newrelicCliFile="/etc/php/$phpVersion/cli/conf.d/newrelic.ini"
+  if [ -f "$newrelicFpmFile" ]; then
+    rm -f $newrelicFpmFile
+    rm -f $newrelicCliFile
+    serviceName="php$phpVersion-fpm"
+    systemctl restart "$serviceName"
+  fi
+done
+
+if [ -d "/var/log/newrelic/" ]; then
+  rm -rf /var/log/newrelic/
+fi
+if [ -d "/etc/newrelic/" ]; then
+  rm -rf /etc/newrelic/
+fi
+
+echo -e "${GREEN}New Relic successfully uninstalled${NO_COLOR}"
